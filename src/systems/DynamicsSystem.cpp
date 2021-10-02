@@ -75,6 +75,8 @@ void DynamicsSystem::integrateRigidBodiesPositions(decimal timeStep, bool isSpli
         mRigidBodyComponents.mConstrainedOrientations[i] = currentOrientation + Quaternion(0, newAngVelocity) *
                                                            currentOrientation * decimal(0.5) * timeStep;
     }
+
+    
 }
 
 // Update the postion/orientation of the bodies
@@ -82,16 +84,7 @@ void DynamicsSystem::updateBodiesState() {
 
     RP3D_PROFILE("DynamicsSystem::updateBodiesState()", mProfiler);
 
-    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-        for (uint j = 0; j < 3; j++) {
-            mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
-            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
-        }
-        for (uint j = 0; j < 3; j++) {
-            mRigidBodyComponents.mLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
-            mRigidBodyComponents.mAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
-        }
-    }
+    
 	
     for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
@@ -127,7 +120,16 @@ void DynamicsSystem::updateBodiesState() {
         mColliderComponents.mLocalToWorldTransforms[i] = mTransformComponents.getTransform(mColliderComponents.mBodiesEntities[i]) *
             mColliderComponents.mLocalToBodyTransforms[i];
     }
-	
+    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+        for (uint j = 0; j < 3; j++) {
+            mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
+        }
+        for (uint j = 0; j < 3; j++) {
+            mRigidBodyComponents.mLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            mRigidBodyComponents.mAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
+        }
+    }
     
 }
 
@@ -158,7 +160,7 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep *
             RigidBody::getWorldInertiaTensorInverse(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
 
-
+        
     }
 
     // Apply gravity force
@@ -201,11 +203,11 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
 
     }
     for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
         for (uint j = 0; j < 3; j++) {
             mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
             mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
         }
+       
     }
 }
 
