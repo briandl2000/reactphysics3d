@@ -99,11 +99,15 @@ class RigidBody : public CollisionBody {
         /// Set the linear velocity of the body.
         void setLinearVelocity(const Vector3& linearVelocity);
 
+        void setLinearVelocityFactor(const Vector3& linearVelocityFactor);
+
         /// Return the angular velocity
         Vector3 getAngularVelocity() const;
 
         /// Set the angular velocity.
         void setAngularVelocity(const Vector3& angularVelocity);
+
+        void setAngularVelocityFactor(const Vector3& angularVelocityFactor);
 
         /// Return the local inertia tensor of the body (in body coordinates)
         const Vector3& getLocalInertiaTensor() const;

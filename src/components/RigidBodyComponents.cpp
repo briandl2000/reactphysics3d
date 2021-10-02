@@ -69,7 +69,9 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     decimal* newSleepTimes = reinterpret_cast<decimal*>(newIsSleeping + nbComponentsToAllocate);
     BodyType* newBodyTypes = reinterpret_cast<BodyType*>(newSleepTimes + nbComponentsToAllocate);
     Vector3* newLinearVelocities = reinterpret_cast<Vector3*>(newBodyTypes + nbComponentsToAllocate);
-    Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(newLinearVelocities + nbComponentsToAllocate);
+    Vector3* newLinearVelocitiesFactors = reinterpret_cast<Vector3*>(newLinearVelocities + nbComponentsToAllocate);
+    Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(newLinearVelocitiesFactors + nbComponentsToAllocate);
+    Vector3* newAngularVelocitiesFactors = reinterpret_cast<Vector3*>(newAngularVelocities + nbComponentsToAllocate);
     Vector3* newExternalForces = reinterpret_cast<Vector3*>(newAngularVelocities + nbComponentsToAllocate);
     Vector3* newExternalTorques = reinterpret_cast<Vector3*>(newExternalForces + nbComponentsToAllocate);
     decimal* newLinearDampings = reinterpret_cast<decimal*>(newExternalTorques + nbComponentsToAllocate);
@@ -101,7 +103,9 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newSleepTimes, mSleepTimes, mNbComponents * sizeof(decimal));
         memcpy(newBodyTypes, mBodyTypes, mNbComponents * sizeof(BodyType));
         memcpy(newLinearVelocities, mLinearVelocities, mNbComponents * sizeof(Vector3));
+        memcpy(newLinearVelocitiesFactors, mLinearVelocitiesFactors, mNbComponents * sizeof(Vector3));
         memcpy(newAngularVelocities, mAngularVelocities, mNbComponents * sizeof(Vector3));
+        memcpy(newAngularVelocitiesFactors, mAngularVelocitiesFactors, mNbComponents * sizeof(Vector3));
         memcpy(newExternalForces, mExternalForces, mNbComponents * sizeof(Vector3));
         memcpy(newExternalTorques, mExternalTorques, mNbComponents * sizeof(Vector3));
         memcpy(newLinearDampings, mLinearDampings, mNbComponents * sizeof(decimal));
@@ -135,7 +139,9 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     mNbAllocatedComponents = nbComponentsToAllocate;
     mBodyTypes = newBodyTypes;
     mLinearVelocities = newLinearVelocities;
+    mLinearVelocitiesFactors = newLinearVelocitiesFactors;
     mAngularVelocities = newAngularVelocities;
+    mAngularVelocitiesFactors = newAngularVelocitiesFactors;
     mExternalForces = newExternalForces;
     mExternalTorques = newExternalTorques;
     mLinearDampings = newLinearDampings;
@@ -171,7 +177,9 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     mSleepTimes[index] = decimal(0);
     mBodyTypes[index] = component.bodyType;
     new (mLinearVelocities + index) Vector3(0, 0, 0);
+    new (mLinearVelocitiesFactors + index) Vector3(0, 0, 0);
     new (mAngularVelocities + index) Vector3(0, 0, 0);
+    new (mAngularVelocitiesFactors + index) Vector3(0, 0, 0);
     new (mExternalForces + index) Vector3(0, 0, 0);
     new (mExternalTorques + index) Vector3(0, 0, 0);
     mLinearDampings[index] = decimal(0.0);
@@ -215,7 +223,9 @@ void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     mSleepTimes[destIndex] = mSleepTimes[srcIndex];
     mBodyTypes[destIndex] = mBodyTypes[srcIndex];
     new (mLinearVelocities + destIndex) Vector3(mLinearVelocities[srcIndex]);
+    new (mLinearVelocitiesFactors + destIndex) Vector3(mLinearVelocitiesFactors[srcIndex]);
     new (mAngularVelocities + destIndex) Vector3(mAngularVelocities[srcIndex]);
+    new (mAngularVelocitiesFactors + destIndex) Vector3(mAngularVelocitiesFactors[srcIndex]);
     new (mExternalForces + destIndex) Vector3(mExternalForces[srcIndex]);
     new (mExternalTorques + destIndex) Vector3(mExternalTorques[srcIndex]);
     mLinearDampings[destIndex] = mLinearDampings[srcIndex];
@@ -258,7 +268,9 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     decimal sleepTime1 = mSleepTimes[index1];
     BodyType bodyType1 = mBodyTypes[index1];
     Vector3 linearVelocity1(mLinearVelocities[index1]);
+    Vector3 linearVelocityFactor1(mLinearVelocitiesFactors[index1]);
     Vector3 angularVelocity1(mAngularVelocities[index1]);
+    Vector3 angularVelocityFactor1(mAngularVelocitiesFactors[index1]);
     Vector3 externalForce1(mExternalForces[index1]);
     Vector3 externalTorque1(mExternalTorques[index1]);
     decimal linearDamping1 = mLinearDampings[index1];
@@ -292,7 +304,9 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     mSleepTimes[index2] = sleepTime1;
     mBodyTypes[index2] = bodyType1;
     new (mLinearVelocities + index2) Vector3(linearVelocity1);
+    new (mLinearVelocitiesFactors + index2) Vector3(linearVelocityFactor1);
     new (mAngularVelocities + index2) Vector3(angularVelocity1);
+    new (mAngularVelocitiesFactors + index2) Vector3(angularVelocityFactor1);
     new (mExternalForces + index2) Vector3(externalForce1);
     new (mExternalTorques + index2) Vector3(externalTorque1);
     mLinearDampings[index2] = linearDamping1;
@@ -333,7 +347,9 @@ void RigidBodyComponents::destroyComponent(uint32 index) {
     mBodiesEntities[index].~Entity();
     mRigidBodies[index] = nullptr;
     mLinearVelocities[index].~Vector3();
+    mLinearVelocitiesFactors[index].~Vector3();
     mAngularVelocities[index].~Vector3();
+    mAngularVelocitiesFactors[index].~Vector3();
     mExternalForces[index].~Vector3();
     mExternalTorques[index].~Vector3();
     mLocalInertiaTensors[index].~Vector3();

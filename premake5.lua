@@ -9,7 +9,7 @@ project "reactphysics3d"
 	{
 		"src/**.h",
 		"src/**.cpp",
-		"include/**.h"
+		"include/**.h",
 	}
 
 	includedirs

@@ -712,6 +712,23 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
              "Body " + std::to_string(mEntity.id) + ": Set linearVelocity=" + linearVelocity.to_string(),  __FILE__, __LINE__);
 }
 
+void RigidBody::setLinearVelocityFactor(const Vector3& linearVelocityFactor) {
+
+    // If it is a static body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
+
+    // Update the linear velocity of the current body state
+    mWorld.mRigidBodyComponents.setLinearVelocityFactor(mEntity, linearVelocityFactor);
+
+    // If the linear velocity is not zero, awake the body
+    if (linearVelocityFactor.lengthSquare() > decimal(0.0)) {
+        setIsSleeping(false);
+    }
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set linearVelocityFactor=" + linearVelocityFactor.to_string(),  __FILE__, __LINE__);
+}
+
 // Set the angular velocity.
 /**
 * @param angularVelocity The angular velocity vector of the body
@@ -731,6 +748,23 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 
     RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set angularVelocity=" + angularVelocity.to_string(),  __FILE__, __LINE__);
+}
+
+void RigidBody::setAngularVelocityFactor(const Vector3& angularVelocityFactor) {
+
+    // If it is a static body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
+
+    // Set the angular velocity
+    mWorld.mRigidBodyComponents.setAngularVelocityFactor(mEntity, angularVelocityFactor);
+
+    // If the velocity is not zero, awake the body
+    if (angularVelocityFactor.lengthSquare() > decimal(0.0)) {
+        setIsSleeping(false);
+    }
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set angularVelocityFactor=" + angularVelocityFactor.to_string(),  __FILE__, __LINE__);
 }
 
 // Set the current position and orientation

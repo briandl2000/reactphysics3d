@@ -85,8 +85,12 @@ class RigidBodyComponents : public Components {
         /// Array with the linear velocity of each component
         Vector3* mLinearVelocities;
 
+        Vector3* mLinearVelocitiesFactors;
+
         /// Array with the angular velocity of each component
         Vector3* mAngularVelocities;
+        
+        Vector3* mAngularVelocitiesFactors;
 
         /// Array with the external force of each component
         Vector3* mExternalForces;
@@ -218,12 +222,16 @@ class RigidBodyComponents : public Components {
 
         /// Set the linear velocity of an entity
         void setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity);
+        
+        void setLinearVelocityFactor(Entity bodyEntity, const Vector3& setLinearVelocityFactor);
 
         /// Return the angular velocity of an entity
         const Vector3& getAngularVelocity(Entity bodyEntity) const;
 
         /// Set the angular velocity of an entity
         void setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity);
+        
+        void setAngularVelocityFactor(Entity bodyEntity, const Vector3& setAngularVelocityFactor);
 
         /// Return the external force of an entity
         const Vector3& getExternalForce(Entity bodyEntity) const;
@@ -453,12 +461,26 @@ inline void RigidBodyComponents::setLinearVelocity(Entity bodyEntity, const Vect
    mLinearVelocities[mMapEntityToComponentIndex[bodyEntity]] = linearVelocity;
 }
 
+inline void RigidBodyComponents::setLinearVelocityFactor(Entity bodyEntity, const Vector3& linearVelocityFactor) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mLinearVelocitiesFactors[mMapEntityToComponentIndex[bodyEntity]] = linearVelocityFactor;
+}
+
 // Set the angular velocity of an entity
 inline void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = angularVelocity;
+}
+
+inline void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocityFactor) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mAngularVelocitiesFactors[mMapEntityToComponentIndex[bodyEntity]] = angularVelocityFactor;
 }
 
 // Return the external force of an entity

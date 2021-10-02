@@ -52,7 +52,13 @@ void DynamicsSystem::integrateRigidBodiesPositions(decimal timeStep, bool isSpli
         // Get the constrained velocity
         Vector3 newLinVelocity = mRigidBodyComponents.mConstrainedLinearVelocities[i];
         Vector3 newAngVelocity = mRigidBodyComponents.mConstrainedAngularVelocities[i];
-
+        
+        // Multiply by velocity factors
+        for(uint j=0; j<3; j++){
+            newLinVelocity[j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            newAngVelocity[j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
+        }
+    
         // Add the split impulse velocity from Contact Solver (only used
         // to update the position)
         newLinVelocity += isSplitImpulseFactor * mRigidBodyComponents.mSplitLinearVelocities[i];
@@ -132,6 +138,11 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
                                                               mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep *
                                                  RigidBody::getWorldInertiaTensorInverse(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
+        for(uint j=0; j<3; j++){
+            mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.getAngularVelocityFactor[i][j];
+        }
+    
     }
 
     // Apply gravity force
