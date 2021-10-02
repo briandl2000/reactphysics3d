@@ -140,7 +140,7 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
                                                  RigidBody::getWorldInertiaTensorInverse(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
         for(uint j=0; j<3; j++){
             mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
-            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.getAngularVelocityFactor[i][j];
+            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
         }
     
     }
