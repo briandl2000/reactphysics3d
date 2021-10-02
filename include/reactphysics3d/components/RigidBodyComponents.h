@@ -476,7 +476,7 @@ inline void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vec
    mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = angularVelocity;
 }
 
-inline void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocityFactor) {
+inline void RigidBodyComponents::setAngularVelocityFactor(Entity bodyEntity, const Vector3& angularVelocityFactor) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 

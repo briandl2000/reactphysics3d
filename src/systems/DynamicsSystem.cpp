@@ -48,23 +48,25 @@ void DynamicsSystem::integrateRigidBodiesPositions(decimal timeStep, bool isSpli
     const decimal isSplitImpulseFactor = isSplitImpulseActive ? decimal(1.0) : decimal(0.0);
 
     for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
+    	
         // Get the constrained velocity
         Vector3 newLinVelocity = mRigidBodyComponents.mConstrainedLinearVelocities[i];
         Vector3 newAngVelocity = mRigidBodyComponents.mConstrainedAngularVelocities[i];
         
-        // Multiply by velocity factors
-        for(uint j=0; j<3; j++){
-            newLinVelocity[j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
-            newAngVelocity[j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
-        }
+        
     
         // Add the split impulse velocity from Contact Solver (only used
         // to update the position)
         newLinVelocity += isSplitImpulseFactor * mRigidBodyComponents.mSplitLinearVelocities[i];
         newAngVelocity += isSplitImpulseFactor * mRigidBodyComponents.mSplitAngularVelocities[i];
+    	
+        // Multiply by velocity factors
+        for (uint j = 0; j < 3; j++) {
+            newLinVelocity[j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            newAngVelocity[j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
+        }
 
-        // Get current position and orientation of the body
+    	// Get current position and orientation of the body
         const Vector3& currentPosition = mRigidBodyComponents.mCentersOfMassWorld[i];
         const Quaternion& currentOrientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation();
 
@@ -80,11 +82,26 @@ void DynamicsSystem::updateBodiesState() {
 
     RP3D_PROFILE("DynamicsSystem::updateBodiesState()", mProfiler);
 
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+        for (uint j = 0; j < 3; j++) {
+            mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
+        }
+        for (uint j = 0; j < 3; j++) {
+            mRigidBodyComponents.mLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            mRigidBodyComponents.mAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
+        }
+    }
+	
+    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+
+
 
         // Update the linear and angular velocity of the body
         mRigidBodyComponents.mLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i];
         mRigidBodyComponents.mAngularVelocities[i] = mRigidBodyComponents.mConstrainedAngularVelocities[i];
+
+
 
         // Update the position of the center of mass of the body
         mRigidBodyComponents.mCentersOfMassWorld[i] = mRigidBodyComponents.mConstrainedPositions[i];
@@ -95,7 +112,7 @@ void DynamicsSystem::updateBodiesState() {
     }
 
     // Update the position of the body (using the new center of mass and new orientation)
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         Transform& transform = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]);
         const Vector3& centerOfMassWorld = mRigidBodyComponents.mCentersOfMassWorld[i];
@@ -104,12 +121,14 @@ void DynamicsSystem::updateBodiesState() {
     }
 
     // Update the local-to-world transform of the colliders
-    for (uint32 i=0; i < mColliderComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i = 0; i < mColliderComponents.getNbEnabledComponents(); i++) {
 
         // Update the local-to-world transform of the collider
         mColliderComponents.mLocalToWorldTransforms[i] = mTransformComponents.getTransform(mColliderComponents.mBodiesEntities[i]) *
-                                                           mColliderComponents.mLocalToBodyTransforms[i];
+            mColliderComponents.mLocalToBodyTransforms[i];
     }
+	
+    
 }
 
 // Integrate the velocities of rigid bodies.
@@ -125,7 +144,7 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
     resetSplitVelocities();
 
     // Integration component velocities using force/torque
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         assert(mRigidBodyComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
         assert(mRigidBodyComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
@@ -135,27 +154,24 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
 
         // Integrate the external force to get the new velocity of the body
         mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep *
-                                                              mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
+            mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep *
-                                                 RigidBody::getWorldInertiaTensorInverse(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
-        for(uint j=0; j<3; j++){
-            mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
-            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
-        }
-    
+            RigidBody::getWorldInertiaTensorInverse(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
+
+
     }
 
     // Apply gravity force
     if (mIsGravityEnabled) {
 
-        for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+        for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
             // If the gravity has to be applied to this rigid body
             if (mRigidBodyComponents.mIsGravityEnabled[i]) {
 
                 // Integrate the gravity force
                 mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + timeStep *
-                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mMasses[i] * mGravity;
+                    mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mMasses[i] * mGravity;
             }
         }
     }
@@ -173,7 +189,7 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
     // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
     //                              => e^(-x) ~ 1 - x
     //                 => v2 = v1 * (1 - c * dt)
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         const decimal linDampingFactor = mRigidBodyComponents.mLinearDampings[i];
         const decimal angDampingFactor = mRigidBodyComponents.mAngularDampings[i];
@@ -181,6 +197,15 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
         const decimal angularDamping = std::pow(decimal(1.0) - angDampingFactor, timeStep);
         mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] * linearDamping;
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = mRigidBodyComponents.mConstrainedAngularVelocities[i] * angularDamping;
+
+
+    }
+    for (uint32 i = 0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+
+        for (uint j = 0; j < 3; j++) {
+            mRigidBodyComponents.mConstrainedLinearVelocities[i][j] *= mRigidBodyComponents.mLinearVelocitiesFactors[i][j];
+            mRigidBodyComponents.mConstrainedAngularVelocities[i][j] *= mRigidBodyComponents.mAngularVelocitiesFactors[i][j];
+        }
     }
 }
 

@@ -35,15 +35,17 @@ using namespace reactphysics3d;
 
 // Constructor
 RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(RigidBody*) +
-                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(BodyType) +
-                                sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
-                                sizeof(Vector3) + sizeof(decimal) + sizeof(decimal) +
-                                sizeof(decimal) + sizeof(decimal) + sizeof(Vector3) +
-                                sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
-                                sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
-                                sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) +
-                                sizeof(bool) + sizeof(bool) + sizeof(List<Entity>)) {
+    :Components(allocator, sizeof(Entity) + sizeof(RigidBody*) +
+        sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(BodyType) +
+        sizeof(Vector3) + sizeof(Vector3) +
+        sizeof(Vector3) + sizeof(Vector3) +
+        sizeof(Vector3) +
+        sizeof(Vector3) + sizeof(decimal) + sizeof(decimal) +
+        sizeof(decimal) + sizeof(decimal) + sizeof(Vector3) +
+        sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
+        sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
+        sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) +
+        sizeof(bool) + sizeof(bool) + sizeof(List<Entity>)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -72,7 +74,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     Vector3* newLinearVelocitiesFactors = reinterpret_cast<Vector3*>(newLinearVelocities + nbComponentsToAllocate);
     Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(newLinearVelocitiesFactors + nbComponentsToAllocate);
     Vector3* newAngularVelocitiesFactors = reinterpret_cast<Vector3*>(newAngularVelocities + nbComponentsToAllocate);
-    Vector3* newExternalForces = reinterpret_cast<Vector3*>(newAngularVelocities + nbComponentsToAllocate);
+    Vector3* newExternalForces = reinterpret_cast<Vector3*>(newAngularVelocitiesFactors + nbComponentsToAllocate);
     Vector3* newExternalTorques = reinterpret_cast<Vector3*>(newExternalForces + nbComponentsToAllocate);
     decimal* newLinearDampings = reinterpret_cast<decimal*>(newExternalTorques + nbComponentsToAllocate);
     decimal* newAngularDampings = reinterpret_cast<decimal*>(newLinearDampings + nbComponentsToAllocate);
@@ -177,9 +179,9 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     mSleepTimes[index] = decimal(0);
     mBodyTypes[index] = component.bodyType;
     new (mLinearVelocities + index) Vector3(0, 0, 0);
-    new (mLinearVelocitiesFactors + index) Vector3(0, 0, 0);
+    new (mLinearVelocitiesFactors + index) Vector3(1.0, 1.0, 1.0);
     new (mAngularVelocities + index) Vector3(0, 0, 0);
-    new (mAngularVelocitiesFactors + index) Vector3(0, 0, 0);
+    new (mAngularVelocitiesFactors + index) Vector3(1.0, 1.0, 1.0);
     new (mExternalForces + index) Vector3(0, 0, 0);
     new (mExternalTorques + index) Vector3(0, 0, 0);
     mLinearDampings[index] = decimal(0.0);
